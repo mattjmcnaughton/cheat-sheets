@@ -14,18 +14,24 @@ wrong; the mismatch only exists between them, which is why so much of this
 sub-section is about making the promise explicit in the signature rather than in
 the documentation.
 
-## Planned sheets
-
-None of these are written yet. Filenames are provisional.
+## Sheets
 
 | Sheet | Covers |
 |---|---|
-| `input-validation-at-boundaries.md` | Where validation belongs, parse-don't-validate, and what "trusted" means one layer in |
+| [Overview](overview.md) | Minimum input, result, failure, retry, cancellation, and compatibility guidance |
+| [Input Validation at Boundaries](input-validation-at-boundaries.md) | Where validation belongs, parse-don't-validate, and what "trusted" means one layer in |
+| [Retries and Idempotency](retries-and-idempotency.md) | What may safely be retried, idempotency keys, and at-least-once delivery meeting non-idempotent handlers |
+| [Timeouts and Cancellation](timeouts-and-cancellation.md) | Deadlines that propagate, work that outlives its caller, and what a timeout says about whether the work happened |
+
+## Planned sheets
+
+These filenames are provisional.
+
+| Sheet | Covers |
+|---|---|
 | `error-and-failure-semantics.md` | Which failures are expected, what a caller may assume after one, and the difference between an error and a bug |
 | `nullability-and-partiality-in-signatures.md` | Partial functions, what a signature promises about absence, and where the caller learns it |
-| `retries-and-idempotency.md` | What may safely be retried, idempotency keys, and at-least-once delivery meeting non-idempotent handlers |
-| `timeouts-and-cancellation.md` | Deadlines that propagate, work that outlives its caller, and what a timeout says about whether the work happened |
-| `partial-writes-across-services.md` | Multi-service updates with no shared transaction; compensations; the states a reader can observe in between |
+| `partial-outcomes-and-batch-semantics.md` | Per-item success, failure, and unknown outcomes without reporting a partial result as complete |
 
 To start one, copy [`_template/sheet-template.md`](../../../_template/sheet-template.md)
 and read [`CONTRIBUTING.md`](../../../CONTRIBUTING.md).

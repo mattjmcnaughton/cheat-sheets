@@ -26,8 +26,14 @@ make a machine catch it — is there when you need to argue the case.
 
 Divided by where expectation and behavior come apart.
 
+**[Computation](cheat-sheets/correctness/computation/README.md)** — the result
+derived by the program.
+
+- [Overview](cheat-sheets/correctness/computation/overview.md)
+
 **[Data](cheat-sheets/correctness/data/README.md)** — the values themselves.
 
+- [Overview](cheat-sheets/correctness/data/overview.md)
 - [Time and Time Zones](cheat-sheets/correctness/data/time-and-time-zones.md)
 - [Numbers and Money](cheat-sheets/correctness/data/numbers-and-money.md)
 - [Absence and Emptiness](cheat-sheets/correctness/data/absence-and-emptiness.md)
@@ -36,13 +42,48 @@ Divided by where expectation and behavior come apart.
 - [Text and Encoding](cheat-sheets/correctness/data/text-and-encoding.md)
 
 **[State](cheat-sheets/correctness/state/README.md)** — what the program holds
-and how it changes. Roadmap only.
+and how it changes.
+
+- [Overview](cheat-sheets/correctness/state/overview.md)
+- [Mutation and Aliasing](cheat-sheets/correctness/state/mutation-and-aliasing.md)
 
 **[Contracts](cheat-sheets/correctness/contracts/README.md)** — what a caller is
-promised. Roadmap only.
+promised.
+
+- [Overview](cheat-sheets/correctness/contracts/overview.md)
+- [Input Validation at Boundaries](cheat-sheets/correctness/contracts/input-validation-at-boundaries.md)
+- [Retries and Idempotency](cheat-sheets/correctness/contracts/retries-and-idempotency.md)
+- [Timeouts and Cancellation](cheat-sheets/correctness/contracts/timeouts-and-cancellation.md)
+
+**[Effects and Environment](cheat-sheets/correctness/effects-and-environment/README.md)** —
+interaction with systems outside the core.
+
+- [Overview](cheat-sheets/correctness/effects-and-environment/overview.md)
+- [Resource Lifecycle](cheat-sheets/correctness/effects-and-environment/resource-lifecycle.md)
+
+**[Persistence](cheat-sheets/correctness/persistence/README.md)** — data surviving
+concurrent work and process lifetime.
+
+- [Overview](cheat-sheets/correctness/persistence/overview.md)
+- [Transactions and Isolation](cheat-sheets/correctness/persistence/transactions-and-isolation.md)
+
+**[Failure and Recovery](cheat-sheets/correctness/failure-and-recovery/README.md)** —
+correctness after interruption or degradation.
+
+- [Overview](cheat-sheets/correctness/failure-and-recovery/overview.md)
+
+**[Capacity](cheat-sheets/correctness/capacity/README.md)** — behavior at resource
+and load limits.
+
+- [Overview](cheat-sheets/correctness/capacity/overview.md)
 
 **[Change](cheat-sheets/correctness/change/README.md)** — behavior drifting from
-expectation over time. Roadmap only.
+expectation over time.
+
+- [Overview](cheat-sheets/correctness/change/overview.md)
+
+See the [roadmap](docs/roadmap.md) for the order in which we intend to add the
+remaining sheets.
 
 ## How a sheet is built
 
@@ -74,9 +115,9 @@ and no products are recommended; techniques are named instead. Testing and
 observability get no sheets of their own — they are cross-cutting, and they live
 in **How to mechanize**.
 
-There is also no tooling in this repository: no site generator, no CI, no link
-checker, no generated indexes. It is Markdown that reads on GitHub, and every
-index is written by hand.
+There is no site generator, CI, or generated index. It is Markdown that reads on
+GitHub, and every index is written by hand. The repository-local contribution
+skill includes an optional structural validator; it does not generate content.
 
 ## Contributing
 
@@ -85,5 +126,8 @@ Read [CONTRIBUTING.md](CONTRIBUTING.md), then copy
 modelled on the conventions of the OWASP Cheat Sheet Series; no OWASP text,
 branding, or licensing is reproduced here, and this project is not affiliated
 with the OWASP Foundation.
+
+Coding agents can load the repository-local `creating-cheat-sheets` skill for the
+same workflow and automated structural checks.
 
 Prose is [CC BY-SA 4.0](LICENSE); code samples are CC0.

@@ -14,9 +14,15 @@ code, or clients still speaking the old contract. The bug is introduced by a
 diff and detonates in a different one, which is why review — anchored on a
 single diff — is structurally poor at catching it.
 
+## Sheets
+
+| Sheet | Covers |
+|---|---|
+| [Overview](overview.md) | Minimum compatibility, rollout, migration, flag, rollback, and deprecation guidance |
+
 ## Planned sheets
 
-None of these are written yet. Filenames are provisional.
+These filenames are provisional.
 
 | Sheet | Covers |
 |---|---|
