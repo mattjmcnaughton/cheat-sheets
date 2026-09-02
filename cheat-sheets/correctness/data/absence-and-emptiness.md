@@ -180,12 +180,12 @@ here, with rows in it?" — an "OK" with nothing behind it.
 
 ## References
 
-- GitLab, [Postmortem of database outage of January 31](https://about.gitlab.com/blog/postmortem-of-database-outage-of-january-31/) (2017) — five backup and replication procedures each produced nothing, and an absent artifact read as health.
-- Tony Hoare, [Null References: The Billion Dollar Mistake](https://www.infoq.com/presentations/Null-References-The-Billion-Dollar-Mistake-Tony-Hoare/), QCon London 2009 — the design argument and the ALGOL W origin. The dollar figure is rhetorical, not measured.
-- Protocol Buffers, [Application Note: Field Presence](https://protobuf.dev/programming-guides/field_presence/) — implicit versus explicit presence, and why proto3 needed `optional`.
-- [RFC 7396: JSON Merge Patch](https://www.rfc-editor.org/rfc/rfc7396) — `null` means remove, so null cannot be set.
-- [RFC 6902: JSON Patch](https://www.rfc-editor.org/rfc/rfc6902) — explicit `add`/`remove`/`replace` when the distinction matters.
-- PostgreSQL, [Comparison Functions and Operators](https://www.postgresql.org/docs/current/functions-comparison.html) — null comparisons yield unknown; `IS DISTINCT FROM`.
-- Oracle Database, [Nulls](https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/Nulls.html) — a zero-length character value is treated as null.
-- Kubernetes, [API Conventions](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md) — optional fields, pointers for unset-versus-zero, and the advice to avoid needing the distinction.
-- Go, [`encoding/json`](https://pkg.go.dev/encoding/json) — `omitempty` versus `omitzero`; null unmarshals as a no-op.
+- GitLab, *Postmortem of database outage of January 31* (2017) — five backup and replication procedures each produced nothing, and an absent artifact read as health.
+- Tony Hoare, *Null References: The Billion Dollar Mistake*, QCon London 2009 — the design argument and the ALGOL W origin. The dollar figure is rhetorical, not measured.
+- Protocol Buffers, *Application Note: Field Presence* — implicit versus explicit presence, and why proto3 needed `optional`.
+- RFC 7396, *JSON Merge Patch* — `null` means remove, so null cannot be set.
+- RFC 6902, *JSON Patch* — explicit `add`/`remove`/`replace` when the distinction matters.
+- PostgreSQL, *Comparison Functions and Operators* — null comparisons yield unknown; `IS DISTINCT FROM`.
+- Oracle Database 19c, *Nulls* — a zero-length character value is treated as null.
+- Kubernetes, *API Conventions* — optional fields, pointers for unset-versus-zero, and the advice to avoid needing the distinction.
+- Go, `encoding/json` package documentation — `omitempty` versus `omitzero`; null unmarshals as a no-op.

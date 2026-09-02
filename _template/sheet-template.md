@@ -78,6 +78,7 @@ enough that a reader could write it. "Be careful" is a failed section. -->
 
 ## References
 
-<!-- Papers, primary docs, specs, incident write-ups. Markdown links with real,
-resolvable URLs. No blogspam, no vendor marketing. Every empirical claim in the
-sheet is backed by something in this list. -->
+<!-- Papers, primary docs, specs, incident write-ups. Cite each source without
+an external URL, using enough identifying information to find it. No blogspam,
+no vendor marketing. Every empirical claim in the sheet is backed by something
+in this list. -->

@@ -165,10 +165,10 @@ noise.
 
 ## References
 
-- U.S. General Accounting Office, [Patriot Missile Defense: Software Problem Led to System Failure at Dhahran, Saudi Arabia](https://www.gao.gov/products/imtec-92-26) (GAO/IMTEC-92-26, B-247094, 1992) — a chopped 24-bit constant for one tenth drifted the clock ~0.34 s over ~100 hours of uptime; 28 died.
-- David Goldberg, [What Every Computer Scientist Should Know About Floating-Point Arithmetic](https://dl.acm.org/doi/10.1145/103162.103163), ACM Computing Surveys 23(1), 1991 — representation error, rounding, and inexact comparison.
-- [IEEE 754-2019: Standard for Floating-Point Arithmetic](https://ieeexplore.ieee.org/document/8766229) — binary and decimal formats, and the rounding-direction attributes.
-- Mike Cowlishaw, [General Decimal Arithmetic](https://speleotrove.com/decimal/) — the specification behind most decimal implementations.
-- [PEP 327: Decimal Data Type](https://peps.python.org/pep-0327/) — the case for a decimal type, and its constructor rules.
-- [ISO 4217 — Currency codes](https://www.iso.org/iso-4217-currency-codes.html) — the code list and each currency's minor unit.
-- ESA, [Ariane 501 — Presentation of Inquiry Board report](https://www.esa.int/Newsroom/Press_Releases/Ariane_501_-_Presentation_of_Inquiry_Board_report) (1996) — an unprotected 64-bit float to 16-bit signed integer conversion.
+- U.S. General Accounting Office, *Patriot Missile Defense: Software Problem Led to System Failure at Dhahran, Saudi Arabia* (GAO/IMTEC-92-26, B-247094, 1992) — a chopped 24-bit constant for one tenth drifted the clock ~0.34 s over ~100 hours of uptime; 28 died.
+- David Goldberg, *What Every Computer Scientist Should Know About Floating-Point Arithmetic*, ACM Computing Surveys 23(1), 1991, DOI 10.1145/103162.103163 — representation error, rounding, and inexact comparison.
+- IEEE 754-2019, *Standard for Floating-Point Arithmetic* — binary and decimal formats, and the rounding-direction attributes.
+- Mike Cowlishaw, *General Decimal Arithmetic* — the specification behind most decimal implementations.
+- PEP 327, *Decimal Data Type* — the case for a decimal type, and its constructor rules.
+- ISO 4217, *Currency codes* — the code list and each currency's minor unit.
+- ESA, *Ariane 501 — Presentation of Inquiry Board report* (1996) — an unprotected 64-bit float to 16-bit signed integer conversion.

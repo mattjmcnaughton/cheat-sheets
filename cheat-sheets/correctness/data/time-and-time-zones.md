@@ -157,10 +157,10 @@ that fired twice or not at all.
 
 ## References
 
-- Cloudflare, [How and why the leap second affected Cloudflare DNS](https://blog.cloudflare.com/how-and-why-the-leap-second-affected-cloudflare-dns/) (2017) — the 2017 leap second made an elapsed-time subtraction go negative, panicking a DNS server.
-- Microsoft, [Summary of Windows Azure Service Disruption on Feb 29th, 2012](https://azure.microsoft.com/en-us/blog/summary-of-windows-azure-service-disruption-on-feb-29th-2012/) — certificate validity computed as "today, next year" on a leap day.
-- Russ Cox, [Proposal: Monotonic Elapsed Time Measurements in Go](https://go.googlesource.com/proposal/+/refs/heads/master/design/12914-monotonic.md) (2017) — why wall and monotonic readings must be separated.
-- [RFC 3339: Date and Time on the Internet: Timestamps](https://www.rfc-editor.org/rfc/rfc3339).
-- [RFC 9557: Timestamps with Additional Information](https://www.rfc-editor.org/rfc/rfc9557) — the `[Area/Location]` annotation.
-- [PEP 495: Local Time Disambiguation](https://peps.python.org/pep-0495/) — `fold`, and a precise statement of the ambiguous hour.
-- [IANA Time Zone Database](https://www.iana.org/time-zones) — release notes record the rule changes that invalidate stored offsets.
+- Cloudflare, *How and why the leap second affected Cloudflare DNS* (2017) — the 2017 leap second made an elapsed-time subtraction go negative, panicking a DNS server.
+- Microsoft, *Summary of Windows Azure Service Disruption on Feb 29th, 2012* — certificate validity computed as "today, next year" on a leap day.
+- Russ Cox, *Proposal: Monotonic Elapsed Time Measurements in Go* (2017) — why wall and monotonic readings must be separated.
+- RFC 3339, *Date and Time on the Internet: Timestamps*.
+- RFC 9557, *Timestamps with Additional Information* — the `[Area/Location]` annotation.
+- PEP 495, *Local Time Disambiguation* — `fold`, and a precise statement of the ambiguous hour.
+- IANA, *Time Zone Database* — release notes record the rule changes that invalidate stored offsets.
