@@ -172,9 +172,9 @@ reconciliation.
 
 ## References
 
-- E. W. Dijkstra, [Why numbering should start at zero (EWD 831)](https://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD831.html) (1982) — the case for `a <= i < b`.
-- Joshua Bloch, [Extra, Extra — Read All About It: Nearly All Binary Searches and Mergesorts are Broken](https://research.google/blog/extra-extra-read-all-about-it-nearly-all-binary-searches-and-mergesorts-are-broken/), Google Research (2006) — a midpoint taken from endpoints rather than width, broken in the JDK for about nine years.
-- [JDK-5045582: (coll) binarySearch() fails for size larger than 1<<30](https://bugs.openjdk.org/browse/JDK-5045582).
-- [RFC 9110 §14.1.1, Byte Ranges](https://www.rfc-editor.org/rfc/rfc9110#section-14.1.1) — byte positions inclusive at both ends: a deployed spec that is not half-open.
-- [Python tutorial: An Informal Introduction to Python](https://docs.python.org/3/tutorial/introduction.html) — slice semantics and `s[:i] + s[i:] == s`.
-- Koen Claessen and John Hughes, [QuickCheck: A Lightweight Tool for Random Testing of Haskell Programs](https://dl.acm.org/doi/10.1145/351240.351266), ICFP 2000.
+- E. W. Dijkstra, *Why numbering should start at zero (EWD 831)* (1982) — the case for `a <= i < b`.
+- Joshua Bloch, *Extra, Extra — Read All About It: Nearly All Binary Searches and Mergesorts are Broken*, Google Research (2006) — a midpoint taken from endpoints rather than width, broken in the JDK for about nine years.
+- JDK-5045582, *(coll) binarySearch() fails for size larger than 1<<30*.
+- RFC 9110 §14.1.1, *Byte Ranges* — byte positions inclusive at both ends: a deployed spec that is not half-open.
+- Python tutorial, *An Informal Introduction to Python* — slice semantics and `s[:i] + s[i:] == s`.
+- Koen Claessen and John Hughes, *QuickCheck: A Lightweight Tool for Random Testing of Haskell Programs*, ICFP 2000, DOI 10.1145/351240.351266.

@@ -167,10 +167,10 @@ collation change between versions. Count U+FFFD and mojibake signatures (`Ã©`,
 
 ## References
 
-- Spotify Engineering, [Creative usernames and Spotify account hijacking](https://engineering.atspotify.com/2013/06/creative-usernames) (2013) — a non-idempotent username canonicalizer let `ᴮᴵᴳᴮᴵᴿᴰ` fold to `BIGBIRD` on registration and to `bigbird` on password reset, taking over an existing account.
-- [UAX #15: Unicode Normalization Forms](https://unicode.org/reports/tr15/) — NFC, NFD, NFKC, NFKD, and what compatibility folding discards.
-- [UAX #29: Unicode Text Segmentation](https://unicode.org/reports/tr29/) — grapheme cluster boundaries, the "user-perceived character".
-- [UTS #10: Unicode Collation Algorithm](https://www.unicode.org/reports/tr10/) — sort keys, strength levels, locale tailoring.
-- [CaseFolding.txt](https://www.unicode.org/Public/UCD/latest/ucd/CaseFolding.txt) — the folding mappings, including `ß` → `ss` and the Turkic entries.
-- [RFC 3629: UTF-8, a transformation format of ISO 10646](https://www.rfc-editor.org/rfc/rfc3629).
-- [PEP 597: Add optional EncodingWarning](https://peps.python.org/pep-0597/) and [PEP 540: Add a new UTF-8 Mode](https://peps.python.org/pep-0540/) — the platform default you cannot rely on, and the lint hook for it.
+- Spotify Engineering, *Creative usernames and Spotify account hijacking* (2013) — a non-idempotent username canonicalizer let `ᴮᴵᴳᴮᴵᴿᴰ` fold to `BIGBIRD` on registration and to `bigbird` on password reset, taking over an existing account.
+- UAX #15, *Unicode Normalization Forms* — NFC, NFD, NFKC, NFKD, and what compatibility folding discards.
+- UAX #29, *Unicode Text Segmentation* — grapheme cluster boundaries, the "user-perceived character".
+- UTS #10, *Unicode Collation Algorithm* — sort keys, strength levels, locale tailoring.
+- Unicode Character Database, `CaseFolding.txt` — the folding mappings, including `ß` → `ss` and the Turkic entries.
+- RFC 3629, *UTF-8, a transformation format of ISO 10646*.
+- PEP 597, *Add optional EncodingWarning*, and PEP 540, *Add a new UTF-8 Mode* — the platform default you cannot rely on, and the lint hook for it.

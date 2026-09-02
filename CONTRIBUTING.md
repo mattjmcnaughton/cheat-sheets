@@ -86,6 +86,10 @@ has added nothing.
 - **Empirical claims get a citation.** If you cannot find a real source, drop
   the claim or say in the sheet that you could not find one. Never invent an
   incident, paper, or spec.
+- **Do not commit external URLs.** You may follow external URLs while
+  researching, but identify sources in committed citations by author,
+  organization, title, standard or issue number, and date instead of including
+  a URL. Relative links to files in this repository are allowed.
 - **Stay in your lane.** When a sheet brushes a neighbour's topic, give it one
   sentence and a relative link. Do not cover it. Each idea is explained at
   length in exactly one sheet.
@@ -119,8 +123,8 @@ Before merging a sheet, a reviewer checks:
   organizational authority — and the front matter agrees.
 - **How to mechanize** names a concrete check at a real rung, and says what is
   out of reach.
-- Every reference resolves and is a primary source, spec, paper, or incident
-  write-up.
+- Every reference identifies a primary source, spec, paper, or incident
+  write-up without including an external URL.
 - Nothing in the sheet is explained at length in another sheet.
 - Word count is under 1,500.
 

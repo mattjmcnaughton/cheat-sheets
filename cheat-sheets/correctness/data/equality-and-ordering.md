@@ -159,13 +159,13 @@ set's size against the expected distinct count; alert on drift.
 
 ## References
 
-- tabulapdf/tabula-java, [issue #116](https://github.com/tabulapdf/tabula-java/issues/116) — `Rectangle` and `TextChunk` comparators using "multiple comparisons to decide which dimension to compare on", rejected by TimSort as `Comparison method violates its general contract!`.
-- Oracle, [Java SE 7 and JDK 7 Compatibility](https://www.oracle.com/java/technologies/compatibility.html) — the replaced sort "may throw an `IllegalArgumentException` if it detects a `Comparable` that violates the `Comparable` contract".
-- npgall/cqengine, [issue #41](https://github.com/npgall/cqengine/issues/41) — the same exception from a comparison key that changed mid-sort under concurrent modification.
-- de Gouw, Rot, de Boer, Bubel & Hähnle, [OpenJDK's java.utils.Collection.sort() Is Broken](https://link.springer.com/chapter/10.1007/978-3-319-21690-4_16), CAV 2015 — verification that found a real bug in TimSort's `mergeCollapse`.
-- [`java.lang.Object`](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html) — the `equals` contract; equal objects must hash equal.
-- [`java.util.Comparator`](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Comparator.html) — "consistent with equals", and the warning about sorted sets and maps.
-- [`java.lang.Double`](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Double.html) — why `equals` treats `NaN` and signed zero unlike `==`.
-- Python, [Data model](https://docs.python.org/3/reference/datamodel.html) — equal objects must hash equal; `__eq__` without `__hash__` sets `__hash__` to `None`.
-- Python, [Expressions: value comparisons](https://docs.python.org/3/reference/expressions.html) — collections assume element reflexivity and test identity first, so `[nan] == [nan]` is true.
+- tabulapdf/tabula-java, issue #116 — `Rectangle` and `TextChunk` comparators using "multiple comparisons to decide which dimension to compare on", rejected by TimSort as `Comparison method violates its general contract!`.
+- Oracle, *Java SE 7 and JDK 7 Compatibility* — the replaced sort "may throw an `IllegalArgumentException` if it detects a `Comparable` that violates the `Comparable` contract".
+- npgall/cqengine, issue #41 — the same exception from a comparison key that changed mid-sort under concurrent modification.
+- de Gouw, Rot, de Boer, Bubel & Hähnle, *OpenJDK's java.utils.Collection.sort() Is Broken*, CAV 2015 — verification that found a real bug in TimSort's `mergeCollapse`.
+- Java SE 21 API documentation, `java.lang.Object` — the `equals` contract; equal objects must hash equal.
+- Java SE 21 API documentation, `java.util.Comparator` — "consistent with equals", and the warning about sorted sets and maps.
+- Java SE 21 API documentation, `java.lang.Double` — why `equals` treats `NaN` and signed zero unlike `==`.
+- Python 3 documentation, *Data model* — equal objects must hash equal; `__eq__` without `__hash__` sets `__hash__` to `None`.
+- Python 3 documentation, *Expressions: value comparisons* — collections assume element reflexivity and test identity first, so `[nan] == [nan]` is true.
 - Joshua Bloch, *Effective Java*, 3rd edition, items 10 and 11.
