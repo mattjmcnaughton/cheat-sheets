@@ -2,13 +2,14 @@
 
 **The values themselves.**
 
-These six sheets cover the point where a single value stops meaning what the
+These sheets cover the point where a single value stops meaning what the
 code assumes it means — before any question of state, contract, or change
 arises. They sit close together on purpose, and each one hands its neighbours'
 territory back with a link rather than covering it twice.
 
 | Sheet | Bug classes | Highest rung |
 |---|---|---|
+| [Overview](overview.md) | Representation mismatch, boundary errors, lossy conversion | type |
 | [Time and Time Zones](time-and-time-zones.md) | UTC drift, DST gaps and overlaps, wall vs. monotonic clocks, midnight assumptions | lint |
 | [Numbers and Money](numbers-and-money.md) | Float equality, binary float for currency, integer overflow, rounding mode | type |
 | [Absence and Emptiness](absence-and-emptiness.md) | Null vs. empty vs. missing vs. default collapsed into one | type |
@@ -17,11 +18,12 @@ territory back with a link rather than covering it twice.
 | [Text and Encoding](text-and-encoding.md) | Normalization, case folding, grapheme vs. code point vs. byte, collation | lint |
 
 **Highest rung** is the top of the [mechanization ladder](../../../CONTRIBUTING.md#the-mechanization-ladder)
-that the sheet's guidance actually reaches — not the best that exists. Two of
-the six reach a type that makes the bad state unrepresentable. Two stop at lint,
-because the language offers one string type and one date-time type and cannot
-tell your intent apart. Two stop at property tests, because their invariants are
-laws about behaviour — transitivity, tiling — that no type system checks.
+that the sheet's guidance actually reaches — not the best that exists. The
+overview and two focused sheets reach a type that makes bad states
+unrepresentable. Two stop at lint, because the language offers one string type
+and one date-time type and cannot tell your intent apart. Two stop at property
+tests, because their invariants are laws about behaviour — transitivity, tiling
+— that no type system checks.
 
 ## Where the boundaries run
 
