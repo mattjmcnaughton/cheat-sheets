@@ -4,24 +4,18 @@ bug_classes: [equals-hashcode-contract, non-transitive-comparator, mutable-key, 
 authority: individual
 mechanizable: property-test
 maturity: draft
-last_reviewed: 2026-08-14
+last_reviewed: 2026-09-08
 ---
 
 # Equality and Ordering
 
 ## Why review misses it
 
-A comparator reads correctly because a reviewer checks it pairwise, and
-transitivity is a property of *triples*: nothing in the diff puts three objects
-side by side. Consider a comparator that picks its axis per pair — boxes on
-roughly the same line order left to right, otherwise top to bottom. The geometry
-is sound and the order is not transitive, since A and B can share a line, B and
-C share a line, and A and C not. The failure is size-dependent on top of that:
-the JDK detects an inconsistent ordering only while merging runs, and it
-insertion-sorts short ones, so a five-element fixture cannot fire the check and
-most inputs sort fine. The `equals`/`hashCode` variant hides differently again —
-the bug is a method that is *absent*, and a diff shows lines added, not lines
-that should have been.
+A comparator can look correct pairwise while violating transitivity across
+three values. A geometry comparator that chooses horizontal or vertical order
+for each pair has no fixed ordering key. Small sorting fixtures may never
+exercise the merge path that detects the defect. Equality/hash mismatches hide
+in another way: the missing corresponding method is outside the diff.
 
 ## The default
 
@@ -38,7 +32,8 @@ pair.**
 2. **Never let a field used in equality, hashing, or a sort key change after
    insertion or during a sort.** A key that moves invalidates the bucket it was
    filed under; a key read live from shared state makes the comparator
-   non-deterministic mid-sort.
+   non-deterministic mid-sort. Handle shared mutable references as described in
+   [mutation-and-aliasing](../state/mutation-and-aliasing.md).
 3. **Build comparators as an ordered chain of keys, each computed from one
    element alone, and never by subtracting.** Branching on the pair is how
    non-transitivity gets in; `a.count - b.count` overflows and flips sign
@@ -48,16 +43,20 @@ pair.**
    `compare` and hash collections by `equals`; disagreement puts a value twice
    in one and loses it from the other.
 5. **Set a policy for `NaN` and `-0.0` in any sort key.** `NaN` is not equal to
-   itself, breaking reflexivity and trichotomy at once; `-0.0 == 0.0`, yet the
-   two may hash and sort apart.
+   itself, breaking reflexivity and trichotomy at once; Python treats signed zeros as equal with equal hashes; Java boxed doubles
+   distinguish them consistently in equality, hashing, and order.
 6. **Choose identity or value equality per type, once, and say which.** Entities
    compare by identifier, values by content; a type quietly doing both gets
    compared the wrong way somewhere.
-7. **Make `equals` false for `null` and foreign types rather than throwing, and
-   make an *ordering* over incomparable types a hard error.** A comparator owes
+7. **Follow the language protocol for unsupported equality operands.** Return
+   false from Java `equals`; return `NotImplemented` from Python `__eq__` so the
+   other operand can participate. Reject unsupported ordering operands. A comparator owes
    you consistency, not cultural correctness: collation belongs to
    [text-and-encoding](text-and-encoding.md), absent values to
    [absence-and-emptiness](absence-and-emptiness.md).
+
+When changing an existing comparator, use
+[Refactoring Without Semantic Drift](../change/refactoring-without-semantic-drift.md).
 
 ## Anti-patterns
 
@@ -78,16 +77,16 @@ def sort_key(r):
     return (r.line_band, r.left)        # line_band comes from r alone
 ```
 
-**"Equality with a tolerance."** Floats never match exactly, so `__eq__` gets an
-epsilon. Approximate equality is not transitive — `a ≈ b`, `b ≈ c`, `a ≉ c` — and
-it wrecks any hash container on the type. Put tolerance in an `is_close` helper
-no collection calls.
+**"Equality with a tolerance."** Approximate results need a tolerance, so
+`__eq__` gets an epsilon. Approximate equality is not transitive — `a ≈ b`, `b
+≈ c`, `a ≉ c` — and it wrecks any hash container on the type. Put tolerance in
+an `is_close` helper no collection calls.
 
-**"Equality here, hashing over there."** A field joins `equals` because it really
-is part of identity, and the hash method sits elsewhere in the file, so objects
-inserted before the change stop answering to lookup. The mirror image is
-`unsafe_hash=True` over every field, including the mutable one a caller sets
-after the object lands in a set.
+**"Equality here, hashing over there."** A field joins `equals` because it
+really is part of identity, and the hash method sits elsewhere in the file, so
+newly equal objects can still have different hashes and fail lookup. The mirror
+image is `unsafe_hash=True` over every field, including the mutable one a
+caller sets after the object lands in a set.
 
 **"`<` and `>` are the comparison."** Shown in Java because the JVM makes it
 explicit: `Double.equals` deliberately disagrees with `==` — `NaN` equals
@@ -102,8 +101,8 @@ Comparator.comparingDouble(x -> x.score)
 
 ## What it costs
 
-Near zero where equality is derived: a frozen dataclass or record costs a
-constructor and nothing at comparison time. Two real bills. Immutability is
+Derived equality still compares fields and hashing still computes a hash;
+the cost depends on those fields. Two real bills. Immutability is
 contagious — freezing the fields that define identity forces copy-on-write
 wherever those objects are edited. And making `compare` agree with `equals`
 usually means adding a tie-break field nobody cares about.
@@ -121,37 +120,41 @@ usually means adding a tie-break field nobody cares about.
 
 ## How to mechanize
 
-**Type — partial; take the two things it buys.** *Derive* rather than implement:
-a frozen dataclass or a record gives structural equality and a matching hash
-that cannot drift apart. And *withhold order*: a type with no meaningful total
-order should not implement the comparison interface at all, so "sorted wrong"
-becomes "does not compile". There it stops: a type system can require that you
-implement `compare`; none can check that the
-implementation is reflexive, symmetric, transitive, or consistent with hashing —
-`(T, T) -> int` is satisfied by `return 1`. These are laws about behavior, not
-shapes. Python promotes exactly one into the language: overriding `__eq__`
-without `__hash__` makes the class unhashable.
+**Type — partial; take the two things it buys.** *Derive* rather than
+implement: a frozen dataclass using default equality/hash settings keeps the
+selected fields aligned. Freezing is shallow: require immutable, hashable field
+values. And *withhold order*: a type with no meaningful total order should not
+implement the comparison interface at all, so "sorted wrong" fails static
+checking where supported, or raises at runtime in Python. There it stops: a
+type system can require that you implement `compare`; ordinary interface
+checking does not prove that the implementation obeys equality, ordering, or
+hashing laws — `(T, T) -> int` is satisfied by `return 1`. These are laws about
+behavior, not shapes. Python promotes exactly one into the language: overriding
+`__eq__` without `__hash__` makes the class unhashable.
 
-**Lint — further than you would expect, and still not the ceiling.** "Defines
-equality and not hashing, or the reverse" is decidable from the AST alone and is
-a standard, widely implemented check; so is subtraction inside a comparison
-method. Both are shapes, which is the limit — a comparator branching on the pair
-has perfect shape and passes them.
+**Lint — further than you would expect, and still not the ceiling.** For
+classes intended to be hashable, check that equality and hashing are derived
+from compatible fields; allow intentionally unhashable value types. Flag
+subtraction inside a fixed-width comparison method. Both are shapes, which is
+the limit — a comparator branching on the pair has perfect shape and passes
+them.
 
 **Property test — the ceiling, because the contracts *are* properties.**
-Generate values, pairs, and triples and assert `x == x`; `a == b` implies
-`b == a`; equality and ordering are transitive;
-`sign(compare(a, b)) == -sign(compare(b, a))`; `compare(a, b) == 0` exactly when
-`a == b`; and `a == b` implies `hash(a) == hash(b)`. Sort a generated list and
-assert the output is ordered and a permutation of the input, with at least one
-case of thirty-two or more elements — a sort that never merges never exercises
-the contract check. Seed the generator with law-breakers: `NaN`, `-0.0`,
-equal-but-not-identical instances, subclass instances, `None`.
+Generate values, pairs, and triples and assert `x == x`; `a == b` implies `b ==
+a`; equality and ordering are transitive; `sign(compare(a, b)) ==
+-sign(compare(b, a))`; `compare(a, b) == 0` exactly when `a == b`; and `a == b`
+implies `hash(a) == hash(b)`. Sort a generated list and assert the output is
+ordered and a permutation of the input, with cases large and varied enough to
+exercise the target implementation merging runs. Do not rely on the sort to
+detect invalid comparators: Python does not provide the JDK contract check.
+Seed the generator with law-breakers: `NaN`, `-0.0`, equal-but-not-identical
+instances, subclass instances, `None`.
 
-**Runtime assertion — for what generation cannot reach.** Reject `NaN` and
-absent sort keys at the boundary, not inside the comparator. Where a comparison
-key comes from shared mutable state, snapshot it before the sort and assert it
-unchanged after. Never silence the contract exception by restoring the legacy
+**Runtime assertion — for what generation cannot reach.** Validate `NaN` and
+absent sort keys against the chosen policy at the boundary. Where a comparison
+key comes from shared mutable state, snapshot it once per element and sort the
+snapshots; checking only before and after cannot detect a value that changes
+and changes back. Never silence the contract exception by restoring the legacy
 merge sort; it buys a silently wrong order instead of a loud one.
 
 **Observation — where hash containers are load-bearing.** Export a deduplicating
