@@ -1,25 +1,20 @@
 ---
 title: Time and Time Zones
 bug_classes: [utc-drift, dst-gap, dst-overlap, monotonic-vs-wall, midnight-assumption]
-authority: individual
+authority: design
 mechanizable: lint
 maturity: draft
-last_reviewed: 2026-08-13
+last_reviewed: 2026-09-08
 ---
 
 # Time and Time Zones
 
 ## Why review misses it
 
-The wrong code and the right code are the same code. `end - start` is arithmetic
-a reviewer reads as obviously non-negative, because the property that fails
-belongs to the clock, not to the diff. Time zone bugs hide the same way: the
-conversion is correct against the tz database as it stands today, and that
-database changes several times a year. Test suites make it worse — they run in
-UTC, on machines whose clocks never step, on dates chosen for convenience, so
-the two hours a year the code is wrong are exactly the hours no test exercises.
-Catching this by reading requires simulating a specific instant in a specific
-zone in your head.
+`end - start` looks like harmless arithmetic, but its meaning depends on the
+clock and time-zone semantics. A conversion can also become wrong after a zone
+rule update. Tests running only in UTC, away from transitions and clock
+corrections, leave those dependencies invisible to a reviewer.
 
 ## The default
 
@@ -38,22 +33,22 @@ readings.**
    fact about one moment; `America/New_York` survives the next rule change. An
    absent zone is absent, not UTC — see
    [absence-and-emptiness](absence-and-emptiness.md).
-3. **Store future scheduled events as local time plus a zone, not as a
-   precomputed UTC instant.** Zone rules change between scheduling and firing,
-   and the user meant 09:00 local.
+3. **Store a future civil-time schedule as local time plus a zone and resolution
+   policy.** Keep a UTC instant when that is the promised deadline instead.
+   **Needs design authority:** agree which value is authoritative and how zone
+   updates affect pending events.
 4. **Measure durations, timeouts, and backoff with a monotonic clock.** Wall
    clocks step for NTP corrections, leap seconds, and manual changes.
 5. **Resolve DST gaps and overlaps with an explicit policy at each call site.**
-   A local time may not exist or may exist twice, and your library's default is
-   rarely what your domain wants.
+   A local time may not exist or may exist twice, and implicit library behavior does not document your domain's choice.
 6. **Assume nothing about a day: not that it is 24 hours, not that midnight
-   exists, not that a local time is unique.** Each is false somewhere, at least
-   twice a year — so express spans as half-open `[start, end)` intervals, which
+   exists, not that a local time is unique.** Transitions can invalidate each assumption — express spans as half-open `[start, end)` intervals, which
    tile correctly even when a day is 23 hours long
    ([boundaries-and-ranges](boundaries-and-ranges.md)).
 7. **Decide whether you are adding calendar units or physical units, and use
-   the matching API.** "One day later" and "86,400 seconds later" differ by an
-   hour twice a year. Overflow in the arithmetic itself is a numeric problem
+   the matching API.** Across an offset transition, a calendar day need not equal 86,400 seconds.
+   In Python, convert aware datetimes to UTC before adding physical durations
+   or subtracting instants: arithmetic with the same `tzinfo` uses wall fields. Overflow in the arithmetic itself is a numeric problem
    ([numbers-and-money](numbers-and-money.md)).
 8. **Set the process time zone explicitly; never read the host's local zone.**
    Otherwise correctness depends on machine configuration nobody reviews.
@@ -63,8 +58,10 @@ readings.**
    human is a separate, formatting problem
    ([text-and-encoding](text-and-encoding.md)).
 10. **Treat the tz database as versioned deployed data, not as part of the
-    platform.** It is updated several times a year, and a stale copy is silently
-    wrong one region at a time.
+    platform.** Track releases and deploy relevant rule changes before affected events fire.
+
+For dependencies between distributed events, use
+[Ordering and Causality](../state/ordering-and-causality.md).
 
 ## Anti-patterns
 
@@ -93,15 +90,15 @@ when you need it.
 
 ## What it costs
 
-Near zero at the type level: zone-aware date-time types ship in every major
-standard library and cost a few bytes and a lookup. Three real costs. Monotonic
-readings are process-local: you cannot persist one, log it as a timestamp, or
-compare it across machines, so durations and instants become separate things,
-carried separately. Storing local time plus a zone for scheduled events means no
-range query on an indexed UTC column tells you what fires next, so you store
-both and accept the denormalization. And pinning the tz database makes it a
-deployment dependency: someone has to notice releases and ship them, ongoing
-work nothing will remind you to do.
+Separate types and time-zone lookups add representation and operational costs.
+Monotonic readings have a clock-specific origin: do not treat them as portable
+timestamps or compare them across machines or reboots. Check your clock API for
+cross-process and suspend behavior, so durations and instants become separate
+things, carried separately. Storing local time plus a zone for scheduled events
+can require a derived UTC firing index; recompute that index when relevant zone
+rules change. And pinning the tz database makes it a deployment dependency:
+someone has to notice releases and ship them, ongoing work nothing will remind
+you to do.
 
 ## Review questions
 
@@ -122,27 +119,32 @@ work nothing will remind you to do.
 
 **Type — partially available; take it where it exists.** Where the standard
 library models instants and local date-times as distinct types with no implicit
-conversion — Java's `Instant`, `LocalDateTime`, `ZonedDateTime` — use them, and
-most of this sheet becomes unrepresentable rather than merely discouraged.
-Python cannot reach this rung out of the box: aware and naive values share one
-`datetime` type, differing only by a runtime `tzinfo` flag, so `naive - aware`
-type-checks and fails at runtime. A wrapper type restores the distinction but
-leaks at every stdlib call and serialization boundary — hence a portable ceiling
-one rung down.
+conversion — Java's `Instant`, `LocalDateTime`, `ZonedDateTime` — use them, to
+prevent accidental interchange. They do not determine gap policies or preserve
+scheduling intent automatically. For the Python checks below, this rung is
+unavailable out of the box: aware and naive values share one `datetime` type,
+differing only by a runtime `tzinfo` flag, so `naive - aware` type-checks and
+fails at runtime. A wrapper type restores the distinction but leaks at every
+stdlib call and serialization boundary — hence a portable ceiling one rung
+down.
 
-**Lint — available everywhere, so start here.** Ban the naive constructors and
+**Lint — enforce the chosen Python clock APIs.** Ban the naive constructors and
 the wall-clock stopwatch: in Python, `datetime.now()` without `tz=`,
-`datetime.utcnow()`, `date.today()`, and `time.time()` for elapsed time; require
-`datetime.now(tz=...)` and `time.monotonic()`. Ban parse formats with no offset,
-and `datetime.replace(tzinfo=...)` on values from outside the process. A handful
-of AST rules against known call names.
+`datetime.utcnow()`, `date.today()`, and `time.time()` for elapsed time;
+require `datetime.now(tz=...)` and `time.monotonic()`. In instant-handling
+code, reject offset-free parses and zone attachment with `replace(tzinfo=...)`;
+civil-time parsing needs a separate validated resolver. A handful of AST rules
+against known call names.
 
-**Property test — for arithmetic lints cannot see.** Generate local times around
-a known transition (`America/New_York` in March and November,
-`Australia/Lord_Howe` for its 30-minute shift); assert local → instant → local
-is identity outside the gap and raises inside it. Assert elapsed time is never
-negative over clock sequences containing backward steps. Assert "add one day"
-then "subtract one day" returns the original local time.
+**Property test — for arithmetic lints cannot see.** Generate local times
+around a known transition (`America/New_York` in March and November,
+`Australia/Lord_Howe` for its 30-minute shift); test your resolver, not just
+`datetime` construction: reject gaps when that is the policy, and verify both
+overlap choices map to the intended UTC instants. Python zone attachment does
+not itself reject nonexistent local times. Assert elapsed time is never
+negative over clock sequences containing backward steps. Assert calendar
+arithmetic against the selected gap/overlap policy; shifting a nonexistent time
+can make add-then-subtract non-invertible.
 
 **Runtime assertion — at the boundaries.** Reject naive date-times arriving from
 deserialization and leaving for storage. Assert every measured duration is
@@ -157,10 +159,12 @@ that fired twice or not at all.
 
 ## References
 
-- Cloudflare, *How and why the leap second affected Cloudflare DNS* (2017) — the 2017 leap second made an elapsed-time subtraction go negative, panicking a DNS server.
+- Cloudflare, *How and why the leap second affected Cloudflare DNS* (2017) — the leap second at the end of 2016 made an elapsed-time subtraction go negative, panicking a DNS server.
 - Microsoft, *Summary of Windows Azure Service Disruption on Feb 29th, 2012* — certificate validity computed as "today, next year" on a leap day.
 - Russ Cox, *Proposal: Monotonic Elapsed Time Measurements in Go* (2017) — why wall and monotonic readings must be separated.
 - RFC 3339, *Date and Time on the Internet: Timestamps*.
 - RFC 9557, *Timestamps with Additional Information* — the `[Area/Location]` annotation.
+- Python 3 documentation, `datetime` — same-zone arithmetic and conversion to UTC.
+- Python 3 documentation, `time.monotonic` — clock origin, cross-process behavior, and platform details.
 - PEP 495, *Local Time Disambiguation* — `fold`, and a precise statement of the ambiguous hour.
 - IANA, *Time Zone Database* — release notes record the rule changes that invalidate stored offsets.

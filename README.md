@@ -36,13 +36,44 @@ Divided by where expectation and behavior come apart.
 - [Text and Encoding](cheat-sheets/correctness/data/text-and-encoding.md)
 
 **[State](cheat-sheets/correctness/state/README.md)** — what the program holds
-and how it changes. Roadmap only.
+and how it changes.
+
+- [Mutation and Aliasing](cheat-sheets/correctness/state/mutation-and-aliasing.md)
+- [Resource Lifecycle](cheat-sheets/correctness/state/resource-lifecycle.md)
+- [Concurrency and Shared State](cheat-sheets/correctness/state/concurrency-and-shared-state.md)
+- [Caching and Staleness](cheat-sheets/correctness/state/caching-and-staleness.md)
+- [Invariants Across Intermediate Steps](cheat-sheets/correctness/state/invariants-across-intermediate-steps.md)
+- [Leases and Fencing](cheat-sheets/correctness/state/leases-and-fencing.md)
+- [Ordering and Causality](cheat-sheets/correctness/state/ordering-and-causality.md)
+- [Replication and Read Consistency](cheat-sheets/correctness/state/replication-and-read-consistency.md)
 
 **[Contracts](cheat-sheets/correctness/contracts/README.md)** — what a caller is
-promised. Roadmap only.
+promised.
+
+- [Input Validation at Boundaries](cheat-sheets/correctness/contracts/input-validation-at-boundaries.md)
+- [Error and Failure Semantics](cheat-sheets/correctness/contracts/error-and-failure-semantics.md)
+- [Nullability and Partiality in Signatures](cheat-sheets/correctness/contracts/nullability-and-partiality-in-signatures.md)
+- [Retries and Idempotency](cheat-sheets/correctness/contracts/retries-and-idempotency.md)
+- [Timeouts and Cancellation](cheat-sheets/correctness/contracts/timeouts-and-cancellation.md)
+- [Partial Writes Across Services](cheat-sheets/correctness/contracts/partial-writes-across-services.md)
 
 **[Change](cheat-sheets/correctness/change/README.md)** — behavior drifting from
-expectation over time. Roadmap only.
+expectation over time.
+
+- [Schema and API Evolution](cheat-sheets/correctness/change/schema-and-api-evolution.md)
+- [Migrations and Backfills](cheat-sheets/correctness/change/migrations-and-backfills.md)
+- [Config and Feature Flags](cheat-sheets/correctness/change/config-and-feature-flags.md)
+- [Refactoring Without Semantic Drift](cheat-sheets/correctness/change/refactoring-without-semantic-drift.md)
+- [Deprecation](cheat-sheets/correctness/change/deprecation.md)
+
+**[Execution](cheat-sheets/correctness/execution/README.md)** — reaching a usable
+result within the operation's work, memory, and numerical limits.
+
+- [Termination and Progress](cheat-sheets/correctness/execution/termination-and-progress.md)
+- [Algorithmic Complexity and Input Size](cheat-sheets/correctness/execution/algorithmic-complexity-and-input-size.md)
+- [Bounded Work and Backpressure](cheat-sheets/correctness/execution/bounded-work-and-backpressure.md)
+- [Streaming and Incremental Processing](cheat-sheets/correctness/execution/streaming-and-incremental-processing.md)
+- [Numerical Stability](cheat-sheets/correctness/execution/numerical-stability.md)
 
 ## How a sheet is built
 

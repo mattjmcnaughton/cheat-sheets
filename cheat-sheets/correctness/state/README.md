@@ -10,26 +10,36 @@ by a second reference, a second thread, a second process, or a second machine.
 The failure shape here is different. A data bug is wrong the moment it is
 written. A state bug is correct at every individual step and wrong in the
 sequence: each write is valid, each read is valid, and the interleaving is not.
-That is why these sheets lean harder on the lower rungs of the mechanization
-ladder — invariant assertions and reconciliation — than the `data` sheets do.
+Choose mechanization for the failure: static checks can catch shared defaults,
+while invariants spanning updates need checks of behavior over time.
 
-## Planned sheets
+| Sheet | Bug classes | Highest rung |
+|---|---|---|
+| [Mutation and Aliasing](mutation-and-aliasing.md) | Shared mutable defaults, shallow-copy aliases, escaped mutable state, false immutability | lint |
+| [Resource Lifecycle](resource-lifecycle.md) | Leaks, use after close, double release, failed partial acquisition | lint |
+| [Concurrency and Shared State](concurrency-and-shared-state.md) | Lost updates, check-and-act races, inconsistent snapshots, deadlocks | property test |
+| [Caching and Staleness](caching-and-staleness.md) | Stale fills, incomplete keys, stale negative entries, stampedes | property test |
+| [Invariants Across Intermediate Steps](invariants-across-intermediate-steps.md) | Partial publication, write skew, mixed versions, partial failure | property test |
+| [Leases and Fencing](leases-and-fencing.md) | Expired owners, unfenced effects, reused epochs, non-atomic fence checks | property test |
+| [Ordering and Causality](ordering-and-causality.md) | Timestamp-based causal assumptions, reordered effects, skipped predecessors, concurrent conflicts | property test |
+| [Replication and Read Consistency](replication-and-read-consistency.md) | Read regressions, stale leaders, mixed replica snapshots | property test |
 
-None of these are written yet. Filenames are provisional.
+**Highest rung** is the strongest concrete check described by the sheet,
+following the [mechanization ladder](../../../CONTRIBUTING.md#the-mechanization-ladder).
+The two lint entries target bounded Python patterns. The remaining sheets use
+generated operation histories because ordinary types and static checks do not
+establish their cross-step or distributed guarantees.
 
-| Sheet | Covers |
-|---|---|
-| `mutation-and-aliasing.md` | Two names for one object; defensive copying; when shared mutable structure stops being an optimization and starts being a bug |
-| `resource-lifecycle.md` | Acquire, use, release; ownership; what happens on the error path; close-once and use-after-close |
-| `concurrency-and-shared-state.md` | Races, atomicity of compound operations, lock scope, what "thread-safe" does and does not promise |
-| `caching-and-staleness.md` | Invalidation, negative caching, stampedes, and how long a wrong answer is allowed to live |
-| `invariants-across-intermediate-steps.md` | Multi-step updates that pass through states no reader should ever see |
-| `leases-and-fencing.md` | Expiring exclusivity, the gap between "my lease expired" and "I noticed", fencing tokens |
-| `ordering-and-causality.md` | Happens-before, causal vs. wall-clock ordering, message reordering and its consequences |
-| `replication-and-read-consistency.md` | Read-your-writes, monotonic reads, and what a replica is allowed to tell you |
+## Where the boundaries run
 
-To start one, copy [`_template/sheet-template.md`](../../../_template/sheet-template.md)
-and read [`CONTRIBUTING.md`](../../../CONTRIBUTING.md).
+- **Mutation** defines which references may change a value; **Resource
+  Lifecycle** defines who releases a handle and when its use must end.
+- **Concurrency** defines the synchronization protocol; **Intermediate Steps**
+  defines the invariant, publication boundary, and coherent read.
+- **Caching** governs derived copies and their freshness; **Replication**
+  governs which committed history a read must observe.
+- **Leases** orders ownership epochs; **Ordering** governs effects and
+  dependencies within or across those epochs.
 
 ---
 

@@ -19,9 +19,10 @@ territory back with a link rather than covering it twice.
 **Highest rung** is the top of the [mechanization ladder](../../../CONTRIBUTING.md#the-mechanization-ladder)
 that the sheet's guidance actually reaches — not the best that exists. Two of
 the six reach a type that makes the bad state unrepresentable. Two stop at lint,
-because the language offers one string type and one date-time type and cannot
-tell your intent apart. Two stop at property tests, because their invariants are
-laws about behaviour — transitivity, tiling — that no type system checks.
+because plain Python string and date-time APIs do not encode the relevant
+semantic distinctions. Two stop at property tests, because their invariants are
+laws about behaviour — transitivity, tiling — that ordinary type checking
+does not prove.
 
 ## Where the boundaries run
 

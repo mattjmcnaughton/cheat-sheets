@@ -2,32 +2,38 @@
 
 **Behavior drifting from expectation over time.**
 
-Every other sub-section asks whether the code is right now. This one asks
-whether it is still right after the schema gained a column, the flag flipped,
-the endpoint gained a version, or the function was cleaned up by someone who
-believed the change was cosmetic.
+The other sections ask whether values, transitions, and contracts are correct.
+Change asks whether those promises survive a new schema, a configuration edit,
+a refactor, or retirement of an interface that consumers still use.
 
-The failure shape here is the most distinctive in the area: nothing is wrong at
-the moment of the change, and the change is often correct in isolation. What
-breaks is the relationship between the new code and data written by the old
-code, or clients still speaking the old contract. The bug is introduced by a
-diff and detonates in a different one, which is why review — anchored on a
-single diff — is structurally poor at catching it.
+The diff shows the new state of the code. Its counterpart can be an old client,
+a retained record, a partially completed migration, or a configuration revision
+that activates a previously dormant path. Review needs evidence about that
+transition as well as the final implementation.
 
-## Planned sheets
+| Sheet | Bug classes | Highest rung |
+|---|---|---|
+| [Schema and API Evolution](schema-and-api-evolution.md) | Incompatible readers and writers, reused field identities, changed defaults, premature contraction | lint |
+| [Migrations and Backfills](migrations-and-backfills.md) | Skipped records, overwritten live updates, lost progress, premature cutover | property test |
+| [Config and Feature Flags](config-and-feature-flags.md) | Invalid combinations, mixed revisions, unstable cohorts, unsafe fallback | lint |
+| [Refactoring Without Semantic Drift](refactoring-without-semantic-drift.md) | Changed evaluation order, aliasing, edge cases, and error timing | property test |
+| [Deprecation](deprecation.md) | Unannounced removal, hidden consumers, renewed dependencies, premature retirement | lint |
 
-None of these are written yet. Filenames are provisional.
+**Highest rung** is the strongest concrete check described by the sheet,
+following the [mechanization ladder](../../../CONTRIBUTING.md#the-mechanization-ladder).
+Static checks cover declared schemas, configuration constraints, and new direct
+uses of deprecated interfaces. Generated tests exercise migrations and behavioral
+equivalence. Deprecation still needs observed usage and consumer agreements to
+justify removal; blocking new references does not prove that old users are gone.
 
-| Sheet | Covers |
-|---|---|
-| `schema-and-api-evolution.md` | Compatible vs. breaking changes, expand-and-contract, and what old readers do with new fields |
-| `migrations-and-backfills.md` | Long-running data changes against live traffic, resumability, and code that must handle both shapes at once |
-| `config-and-feature-flags.md` | Flags as untested code paths, combinations nobody exercised, and the cost of never deleting one |
-| `refactoring-without-semantic-drift.md` | Behaviour-preserving change, characterization tests, and the edge cases the old code handled by accident |
-| `deprecation.md` | Announcing, measuring, and actually removing; how to know a thing is unused rather than assume it |
+## Where the boundaries run
 
-To start one, copy [`_template/sheet-template.md`](../../../_template/sheet-template.md)
-and read [`CONTRIBUTING.md`](../../../CONTRIBUTING.md).
+- **Evolution** defines which contract versions can coexist; **Migrations**
+  moves existing records between those representations while writes continue.
+- **Configuration** controls which behavior runs; **Refactoring** preserves
+  observable behavior while changing its implementation.
+- **Deprecation** governs the commitment to retire a surface and the evidence
+  for removal; **Evolution** governs compatibility before that removal.
 
 ---
 

@@ -14,21 +14,34 @@ wrong; the mismatch only exists between them, which is why so much of this
 sub-section is about making the promise explicit in the signature rather than in
 the documentation.
 
-## Planned sheets
+| Sheet | Bug classes | Highest rung |
+|---|---|---|
+| [Input Validation at Boundaries](input-validation-at-boundaries.md) | Unchecked input, lossy coercion, stale validation, parser resource exhaustion | property test |
+| [Error and Failure Semantics](error-and-failure-semantics.md) | Errors reported as success, undocumented partial effects, lost causes, ambiguous outcomes | property test |
+| [Nullability and Partiality in Signatures](nullability-and-partiality-in-signatures.md) | Unchecked absence, ambiguous sentinels, hidden partial functions, invalid result combinations | type |
+| [Retries and Idempotency](retries-and-idempotency.md) | Duplicate effects, reused operation keys, lost deduplication records, retry amplification | property test |
+| [Timeouts and Cancellation](timeouts-and-cancellation.md) | Reset budgets, orphaned work, swallowed cancellation, timeout mistaken for rollback | property test |
+| [Partial Writes Across Services](partial-writes-across-services.md) | Lost dual writes, hidden pending states, unsafe compensation, stranded workflows | property test |
 
-None of these are written yet. Filenames are provisional.
+**Highest rung** is the strongest concrete check described by the sheet,
+following the [mechanization ladder](../../../CONTRIBUTING.md#the-mechanization-ladder).
+The type entry requires checked callers and validated boundaries. The property
+tests exercise acceptance predicates, failure postconditions, or operation
+histories that signatures alone cannot establish.
 
-| Sheet | Covers |
-|---|---|
-| `input-validation-at-boundaries.md` | Where validation belongs, parse-don't-validate, and what "trusted" means one layer in |
-| `error-and-failure-semantics.md` | Which failures are expected, what a caller may assume after one, and the difference between an error and a bug |
-| `nullability-and-partiality-in-signatures.md` | Partial functions, what a signature promises about absence, and where the caller learns it |
-| `retries-and-idempotency.md` | What may safely be retried, idempotency keys, and at-least-once delivery meeting non-idempotent handlers |
-| `timeouts-and-cancellation.md` | Deadlines that propagate, work that outlives its caller, and what a timeout says about whether the work happened |
-| `partial-writes-across-services.md` | Multi-service updates with no shared transaction; compensations; the states a reader can observe in between |
+## Where the boundaries run
 
-To start one, copy [`_template/sheet-template.md`](../../../_template/sheet-template.md)
-and read [`CONTRIBUTING.md`](../../../CONTRIBUTING.md).
+- **Input Validation** defines how external representations enter the domain;
+  **Nullability** defines which result cases a caller must handle.
+- **Failure Semantics** defines the meaning and remaining state of an error;
+  **Retries** defines when repeating an operation preserves its intended effect.
+- **Timeouts** bounds waiting and defines cancellation ownership; it does not
+  determine whether a remote effect committed.
+- **Partial Writes** coordinates independent commit boundaries; State's
+  [Intermediate Steps](../state/invariants-across-intermediate-steps.md) covers
+  invariants within one publication boundary.
+- Change's [Schema and API Evolution](../change/schema-and-api-evolution.md)
+  covers compatibility when these promises change over time.
 
 ---
 

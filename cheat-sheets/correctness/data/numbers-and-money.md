@@ -4,7 +4,7 @@ bug_classes: [float-equality, binary-float-for-currency, integer-overflow, round
 authority: design
 mechanizable: type
 maturity: draft
-last_reviewed: 2026-08-14
+last_reviewed: 2026-09-08
 ---
 
 # Numbers and Money
@@ -15,9 +15,8 @@ The wrong code is shorter than the right code and reads as elementary. `total +=
 price * quantity` and `if balance == 0` are lines a reviewer scans past, because
 the defect is not in the operation but in the type the values arrived in,
 declared in a file the diff does not touch. Then the error hides behind size:
-one multiplication is accurate to fifteen digits, so unit tests pass, and the
-discrepancy surfaces only after thousands of accumulations, or as the cent
-reconciliation cannot account for. Test data makes it worse — engineers write
+small representation errors pass ordinary fixtures but can change a rounding
+decision even in one calculation. Test data makes it worse — engineers write
 `19.50` and `0.25`, exactly representable in binary, and never `0.10` or `1.15`,
 which are not.
 
@@ -38,21 +37,21 @@ system can hold.**
    fractions, so the value you stored is not the one you wrote.
 3. **Take the number of minor units from ISO 4217, per currency.** Two places is
    not universal: JPY has zero, KWD has three.
-4. **Never compare floats with `==`; use a domain-derived tolerance, relative
-   rather than absolute above unit scale.** A fixed `1e-9` epsilon is
-   meaningless at magnitude 1e12. What `NaN` then does to a comparator is a
+4. **Use a domain-derived tolerance when comparing approximate results.**
+   Combine relative tolerance with an absolute tolerance near zero; reserve exact
+   equality for cases where exact represented values are the intended contract. What `NaN` then does to a comparator is a
    separate problem ([equality-and-ordering](equality-and-ordering.md)).
 5. **Round once, at a named boundary, with the mode written at the call site.**
-   Intermediate rounding compounds the error, and an unstated mode is whatever
-   the language chose.
+   Keep intermediate precision sufficient for the calculation; decimal arithmetic
+   also rounds when its context precision is exhausted.
 6. **Round half-even unless a rule or contract mandates otherwise, and never
-   substitute truncation.** Half-up biases every tie one way and truncation
-   biases every value toward zero; both accumulate linearly.
+   substitute truncation.** Half-even avoids consistently rounding ties away from zero; it does not
+   guarantee unbiased totals for every input distribution.
 7. **Split money with an allocation that sums back to the whole.** Dividing 1.00
    three ways gives 0.34, 0.33, 0.33 — distribute the remainder rather than
    losing or minting a cent.
-8. **Size integers from the largest value the system can hold, and use checked,
-   saturating, or arbitrary-precision arithmetic wherever a fixed width can
+8. **Size integers from the largest value the system can hold, and use checked
+   or arbitrary-precision arithmetic wherever a fixed width can
    wrap.** Silent wraparound turns a large balance negative; the *units* of a
    duration or tick count are a clock question
    ([time-and-time-zones](time-and-time-zones.md)).
@@ -63,18 +62,21 @@ system can hold.**
    wire shape, whose encoding is a format question
    ([text-and-encoding](text-and-encoding.md)).
 
+For error introduced by approximate algorithms, use
+[Numerical Stability](../execution/numerical-stability.md).
+
 ## Anti-patterns
 
-**"Floats are fine — we round for display."** True of one transaction: the error
-is far below a cent, so the rendered figure is right. It stops being true at the
-ledger, where thousands of sub-cent errors sum into a reconciliation break.
+**"Floats are fine — we round for display."** Small errors look harmless, but
+a value near a rounding boundary can produce the wrong cent in one transaction.
+Parse the decimal input exactly before calculation and apply the named policy.
 
 **"Multiply by 100 and cast to int."** A tidy route to minor units from a price
 that arrived as a float. The cast truncates, and the float was already low.
 
 ```python
 # wrong
-int(1.15 * 100)      # 114 — 1.15 is stored as 1.1499999999999999
+int(1.15 * 100)      # 114 — the product is slightly below 115
 round(2.675, 2)      # 2.67 — the stored value is below the tie
 
 # right
@@ -92,15 +94,14 @@ book, reach the width far sooner than any single value suggests.
 
 ## What it costs
 
-Software decimal arithmetic does not run on the FPU and is materially slower
-than hardware floats; integer minor units are as fast as arithmetic gets. For
-business software this is not a hot path; where it is, batch in integers rather
-than reach back for floats. The real bill is ergonomic. A `Money` type cannot be
-added to a raw number, so every boundary — ORM, JSON, template, test fixture —
-needs an explicit conversion, and each is somewhere the discipline can leak.
-Percentages and tax rates are not money, so you keep two numeric vocabularies
-and convert on purpose. And rules 5 through 7 make division a named remainder
-policy someone must decide rather than inherit.
+Decimal arithmetic and arbitrary-precision integers have different costs from
+hardware floats; benchmark your actual hot path before choosing a
+representation. The real bill is ergonomic. A `Money` type cannot be added to a
+raw number, so every boundary — ORM, JSON, template, test fixture — needs an
+explicit conversion, and each is somewhere the discipline can leak. Percentages
+and tax rates are not money, so you keep two numeric vocabularies and convert
+on purpose. And rules 5 through 7 make division a named remainder policy
+someone must decide rather than inherit.
 
 ## Review questions
 
@@ -117,10 +118,12 @@ policy someone must decide rather than inherit.
 
 ## How to mechanize
 
-**Type — reachable, and this is where the work belongs.** Model money as an
-immutable value carrying integer minor units and a currency, with arithmetic
-that refuses mismatched currencies and no path back to `float`. Mixed-currency
-addition, sub-minor-unit amounts, and lossy coercion stop being representable.
+**Type — prevent mixing money with unrelated quantities.** Require a `Money`
+parameter instead of a bare number and run a static type checker. Integer fields
+exclude fractional units in checked code. A runtime currency string does not
+make currency mismatches unrepresentable: validate currencies and amounts at
+input, then reject mismatched addition at runtime. Python annotations alone do
+not validate constructor arguments.
 
 ```python
 @dataclass(frozen=True)
@@ -139,29 +142,31 @@ class Money:
 
 Overflow is what the type cannot carry in Python, whose `int` is arbitrary
 precision: the width constraint lives at the storage and wire boundary, so
-declare it there. In fixed-width languages, use checked or saturating
-operations, not the wrapping defaults.
+declare it there. In fixed-width languages, use checked
+operations; saturation silently changes the amount and is unsuitable for money.
 
 **Lint — for what the type cannot stop at construction.** Fail the build on
-`Decimal` or `Money` built from a float; on `==` between floats; on `round()` in
-money paths without an explicit mode; and on migrations declaring `FLOAT`,
-`DOUBLE`, or `REAL` for a money column. All are AST or schema rules.
+`Decimal` or `Money` built from a float; on approximate-result comparisons
+lacking a tolerance; on `round()` in money paths without an explicit mode; and
+on migrations declaring `FLOAT`, `DOUBLE`, or `REAL` for a money column. All
+are AST or schema rules.
 
 **Property test — for the arithmetic laws.** Generate amounts and split counts;
-assert `sum(allocate(total, n)) == total` for every `n`; assert Money addition
-is associative and `a + b - b == a` (both hold for exact integers and fail for
-floats, which makes the test a discriminator); assert serialize-then-parse is
+assert `sum(allocate(total, n)) == total` for every positive `n`; assert
+same-currency addition is associative and subtraction reverses addition when
+all intermediate values fit the declared limits; assert serialize-then-parse is
 the identity.
 
 **Runtime assertion — at the edges the type does not own.** Reject inbound
 amounts that are not whole minor units for their currency, and values exceeding
 the declared storage width, before the write rather than after. In a
-double-entry system, assert every transaction's legs sum to zero.
+double-entry system, assert each transaction balances per currency under the
+ledger's accounting rules.
 
-**Observation — for the residue only production shows.** Reconcile ledger totals
-against external statements and alert on any nonzero residual. Track the signed
-sum of rounding adjustments: steady drift one way is a biased rounding mode, not
-noise.
+**Observation — for the residue only production shows.** Reconcile ledger
+totals against external statements and alert on any nonzero residual. Track the
+signed sum of rounding adjustments: investigate sustained drift against the
+intended rounding and allocation policy.
 
 ## References
 
@@ -169,6 +174,7 @@ noise.
 - David Goldberg, *What Every Computer Scientist Should Know About Floating-Point Arithmetic*, ACM Computing Surveys 23(1), 1991, DOI 10.1145/103162.103163 — representation error, rounding, and inexact comparison.
 - IEEE 754-2019, *Standard for Floating-Point Arithmetic* — binary and decimal formats, and the rounding-direction attributes.
 - Mike Cowlishaw, *General Decimal Arithmetic* — the specification behind most decimal implementations.
+- Python 3 documentation, `math.isclose` and `decimal` — combined tolerances and context precision.
 - PEP 327, *Decimal Data Type* — the case for a decimal type, and its constructor rules.
 - ISO 4217, *Currency codes* — the code list and each currency's minor unit.
 - ESA, *Ariane 501 — Presentation of Inquiry Board report* (1996) — an unprotected 64-bit float to 16-bit signed integer conversion.
